@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">Pomodoro</string>
+
+    <string name="title_pomodoro">Pomodoro</string>
+    <string name="title_short_break">Short Break</string>
+    <string name="title_long_break">Long Break</string>
+    <string name="title_start">Start</string>
+    <string name="title_resume">Resume</string>
+    <string name="title_pause">Pause</string>
+    <string name="content_timer_pomodoro">25:00</string>
+    <string name="content_timer_short_break">05:00</string>
+    <string name="content_timer_long_break">15:00</string>
 </resources>
