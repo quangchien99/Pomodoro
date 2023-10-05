@@ -34,7 +34,7 @@ val Typography = Typography(
     button = TextStyle(
         fontFamily = SpaceGroTesk,
         fontWeight = FontWeight.Bold,
-        fontSize = 34.sp,
+        fontSize = 28.sp,
         fontStyle = FontStyle.Normal
     ),
 )

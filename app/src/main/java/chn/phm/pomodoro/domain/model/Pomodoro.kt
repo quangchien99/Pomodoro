@@ -1,10 +1,16 @@
 package chn.phm.pomodoro.domain.model
 
-data class Pomodoro(
-    var timerType: TimerType = TimerType.POMODORO,
-    var state: PomodoroState = PomodoroState.READY,
-    var remainingTime: Int = timerType.duration * 60
-)
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+
+@Stable
+class Pomodoro {
+    var timerType by mutableStateOf(TimerType.POMODORO)
+    var state by mutableStateOf(PomodoroState.READY)
+    var remainingTime by mutableStateOf(timerType.duration * 60)
+}
 
 enum class TimerType(val duration: Int) {
     POMODORO(25),
@@ -15,5 +21,6 @@ enum class TimerType(val duration: Int) {
 enum class PomodoroState {
     READY,
     COUNTING,
-    PAUSED
+    PAUSED,
+    FINISHED
 }

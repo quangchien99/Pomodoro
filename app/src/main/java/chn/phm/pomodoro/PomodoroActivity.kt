@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
+import chn.phm.pomodoro.ui.PomodoroViewModel
 import chn.phm.pomodoro.ui.screen.PomodoroScreen
 import chn.phm.pomodoro.ui.theme.PomodoroTheme
 
@@ -21,7 +23,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    PomodoroScreen()
+                    val pomodoroViewModel = hiltViewModel<PomodoroViewModel>()
+                    PomodoroScreen(pomodoroViewModel)
                 }
             }
         }
