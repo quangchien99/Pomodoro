@@ -1,5 +1,6 @@
 package chn.phm.pomodoro.ui.screen
 
+import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -46,6 +47,7 @@ import java.util.Locale
 
 @Composable
 fun PomodoroScreen(
+    context: Context,
     pomodoroViewModel: PomodoroViewModel
 ) {
     val currentPomodoro by pomodoroViewModel.currentPomodoro
@@ -102,7 +104,7 @@ fun PomodoroScreen(
                 modifier = Modifier.padding(bottom = 16.dp),
             )
 
-            pomodoroActions(pomodoroViewModel, currentPomodoro)
+            pomodoroActions(context, pomodoroViewModel, currentPomodoro)
         }
     }
 }
@@ -165,6 +167,7 @@ private fun pomodoroModes(
 
 @Composable
 private fun pomodoroActions(
+    context: Context,
     pomodoroViewModel: PomodoroViewModel,
     currentPomodoro: Pomodoro
 ) {
@@ -186,13 +189,13 @@ private fun pomodoroActions(
             onClick = {
                 when (currentPomodoro.state) {
                     PomodoroState.READY -> {
-                        pomodoroViewModel.start()
+                        pomodoroViewModel.start(context = context)
                     }
                     PomodoroState.COUNTING -> {
                         pomodoroViewModel.pause()
                     }
                     PomodoroState.PAUSED -> {
-                        pomodoroViewModel.resume()
+                        pomodoroViewModel.resume(context = context)
                     }
                     PomodoroState.FINISHED -> {
                         //do nothing

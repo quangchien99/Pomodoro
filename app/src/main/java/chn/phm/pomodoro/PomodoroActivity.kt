@@ -29,7 +29,10 @@ class PomodoroActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val pomodoroViewModel = hiltViewModel<PomodoroViewModel>()
-                    PomodoroScreen(pomodoroViewModel)
+                    PomodoroScreen(
+                        context = this,
+                        pomodoroViewModel = pomodoroViewModel
+                    )
                 }
             }
         }
