@@ -17,4 +17,6 @@
     <string name="background_galaxy_name">Galaxy</string>
     <string name="background_night_name">Night</string>
     <string name="background_rainy_name">Rainy</string>
+
+    <string name="alarm_sound_digital_name">Digital</string>
 </resources>

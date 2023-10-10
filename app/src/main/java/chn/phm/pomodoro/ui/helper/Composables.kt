@@ -86,6 +86,15 @@ fun createOutlinedButton(
     }
 }
 
+@Composable
+fun CustomDivider() {
+    Divider(
+        thickness = 1.dp,
+        color = Color.LightGray,
+        modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+    )
+}
+
 
 @Composable
 fun <T> LargeDropdownMenu(
@@ -122,6 +131,7 @@ fun <T> LargeDropdownMenu(
             },
             onValueChange = { },
             readOnly = true,
+            textStyle = MaterialTheme.typography.titleMedium
         )
 
         // Transparent clickable surface on top of OutlinedTextField

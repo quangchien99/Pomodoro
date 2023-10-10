@@ -56,6 +56,9 @@ fun PomodoroScreen(
     if (isOpenSettingDialog.value) {
         SettingsDialog(
             currentConfig = currentPomodoroConfig,
+            onAlarmSoundSelected = { selectedAlarmSound ->
+                pomodoroViewModel.playAlarmSound(context, selectedAlarmSound.resId)
+            },
             onDismissRequest = {
                 isOpenSettingDialog.value = false
             }

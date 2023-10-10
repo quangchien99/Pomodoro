@@ -7,7 +7,6 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import chn.phm.pomodoro.R
 import chn.phm.pomodoro.data.datastore.PomodoroConfigCache
 import chn.phm.pomodoro.domain.model.Pomodoro
 import chn.phm.pomodoro.domain.model.PomodoroConfig
@@ -97,7 +96,7 @@ class PomodoroViewModel @Inject constructor(
 
                 override fun onFinish() {
                     _currentPomodoro.value.state = PomodoroState.FINISHED
-                    playFinishSound(context)
+                    playAlarmSound(context, _currentPomodoroConfig.value.alarmSound.resId)
                     when (_currentPomodoro.value.timerType) {
                         TimerType.POMODORO -> {
                             pomodoroCount++
@@ -208,9 +207,8 @@ class PomodoroViewModel @Inject constructor(
         }
     }
 
-    // Add a method to play the sound
-    private fun playFinishSound(context: Context) {
-        val mediaPlayer = MediaPlayer.create(context, _currentPomodoroConfig.value.alarmSound.resId)
+    fun playAlarmSound(context: Context, soundId: Int) {
+        val mediaPlayer = MediaPlayer.create(context, soundId)
         mediaPlayer?.start()
 
         // Release the MediaPlayer when playback is completed

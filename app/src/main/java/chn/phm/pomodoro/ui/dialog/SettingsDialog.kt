@@ -23,7 +23,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -47,8 +46,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import chn.phm.pomodoro.R
+import chn.phm.pomodoro.domain.model.AlarmSound
 import chn.phm.pomodoro.domain.model.Background
 import chn.phm.pomodoro.domain.model.PomodoroConfig
+import chn.phm.pomodoro.ui.helper.CustomDivider
 import chn.phm.pomodoro.ui.helper.LargeDropdownMenu
 import chn.phm.pomodoro.ui.theme.SelectedColor
 import chn.phm.pomodoro.ui.theme.Shapes
@@ -56,6 +57,7 @@ import chn.phm.pomodoro.ui.theme.Shapes
 @Composable
 fun SettingsDialog(
     currentConfig: PomodoroConfig,
+    onAlarmSoundSelected: (AlarmSound) -> Unit,
     onDismissRequest: () -> Unit,
     onConfirmation: (PomodoroConfig) -> Unit
 ) {
@@ -83,7 +85,7 @@ fun SettingsDialog(
                     onDismissRequest()
                 }
 
-                SettingContent(currentConfig) { config ->
+                SettingContent(currentConfig, onAlarmSoundSelected) { config ->
                     onConfirmation(config)
                 }
             }
@@ -112,6 +114,7 @@ private fun ColumnScope.Header(onDismissRequest: () -> Unit) {
 @Composable
 private fun ColumnScope.SettingContent(
     currentConfig: PomodoroConfig,
+    onAlarmSoundSelected: (AlarmSound) -> Unit,
     onConfirmation: (PomodoroConfig) -> Unit
 ) {
     var newInterval by remember { mutableStateOf(currentConfig.longBreakInterval.toString()) }
@@ -121,6 +124,11 @@ private fun ColumnScope.SettingContent(
     var selectedThemeIndex by remember {
         mutableStateOf(
             Background.values().indexOf(currentConfig.background)
+        )
+    }
+    var selectedSoundIndex by remember {
+        mutableStateOf(
+            AlarmSound.values().indexOf(currentConfig.alarmSound)
         )
     }
 
@@ -232,22 +240,22 @@ private fun ColumnScope.SettingContent(
             }
         )
 
-        Row(
+        LargeDropdownMenu(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-                .padding(start = 20.dp, end = 24.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .padding(bottom = 16.dp),
-                text = "Alarm Sound:",
-                style = MaterialTheme.typography.titleMedium
-            )
-        }
+                .padding(start = 20.dp, end = 20.dp, bottom = 16.dp),
+            items = listOf(
+                R.string.alarm_sound_digital_name
+            ).map { resourceId ->
+                stringResource(id = resourceId)
+            },
+            selectedIndex = selectedSoundIndex,
+            onItemSelected = { index, _ ->
+                selectedSoundIndex = index
+                onAlarmSoundSelected(AlarmSound.values()[selectedSoundIndex])
+            },
+        )
 
         CustomDivider()
 
@@ -359,14 +367,5 @@ private fun RowScope.durationTextField(
             unfocusedIndicatorColor = Color.Transparent,
             disabledIndicatorColor = Color.Transparent
         )
-    )
-}
-
-@Composable
-private fun CustomDivider() {
-    Divider(
-        thickness = 1.dp,
-        color = Color.LightGray,
-        modifier = Modifier.padding(start = 8.dp, end = 8.dp)
     )
 }
