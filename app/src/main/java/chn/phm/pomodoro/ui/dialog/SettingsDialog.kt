@@ -43,10 +43,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import chn.phm.pomodoro.R
+import chn.phm.pomodoro.domain.model.Background
 import chn.phm.pomodoro.domain.model.PomodoroConfig
+import chn.phm.pomodoro.ui.helper.LargeDropdownMenu
 import chn.phm.pomodoro.ui.theme.SelectedColor
 import chn.phm.pomodoro.ui.theme.Shapes
 
@@ -60,7 +63,7 @@ fun SettingsDialog(
         onDismissRequest = { onDismissRequest() },
         properties = DialogProperties(
             dismissOnBackPress = true,
-            dismissOnClickOutside = true
+            dismissOnClickOutside = false
         )
     ) {
         Card(
@@ -115,6 +118,11 @@ private fun ColumnScope.SettingContent(
     var newPomodoroDuration by remember { mutableStateOf(currentConfig.pomodoroDuration.toString()) }
     var newShortBreakDuration by remember { mutableStateOf(currentConfig.shortBreakDuration.toString()) }
     var newLongBreakDuration by remember { mutableStateOf(currentConfig.longBreakDuration.toString()) }
+    var selectedThemeIndex by remember {
+        mutableStateOf(
+            Background.values().indexOf(currentConfig.background)
+        )
+    }
 
 
     Column(
@@ -264,23 +272,21 @@ private fun ColumnScope.SettingContent(
                 )
             }
         )
-
-        Row(
+        LargeDropdownMenu(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-                .padding(start = 20.dp, end = 24.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .padding(bottom = 16.dp),
-                text = "Background:",
-                style = MaterialTheme.typography.titleMedium
-            )
-        }
+                .padding(start = 20.dp, end = 20.dp, bottom = 16.dp),
+            items = listOf(
+                R.string.background_galaxy_name,
+                R.string.background_night_name,
+                R.string.background_rainy_name
+            ).map { resourceId ->
+                stringResource(id = resourceId)
+            },
+            selectedIndex = selectedThemeIndex,
+            onItemSelected = { index, _ -> selectedThemeIndex = index },
+        )
 
         CustomDivider()
 
@@ -299,7 +305,8 @@ private fun ColumnScope.SettingContent(
                             pomodoroDuration = newPomodoroDuration.toInt(),
                             shortBreakDuration = newShortBreakDuration.toInt(),
                             longBreakDuration = newLongBreakDuration.toInt(),
-                            longBreakInterval = newInterval.toInt()
+                            longBreakInterval = newInterval.toInt(),
+                            background = Background.values()[selectedThemeIndex]
                         )
                     )
                 },
@@ -332,14 +339,18 @@ private fun RowScope.durationTextField(
     TextField(
         modifier = Modifier
             .width(100.dp)
-            .height(48.dp)
+            .height(64.dp)
             .align(Alignment.CenterVertically),
         value = duration,
-        textStyle = MaterialTheme.typography.titleSmall,
+        textStyle = MaterialTheme.typography.titleSmall.copy(
+            fontSize = 16.sp
+        ),
         onValueChange = { onValueChange(it) },
         label = {
             Text(
-                text, style = MaterialTheme.typography.labelSmall
+                modifier = Modifier.padding(bottom = 8.dp),
+                text = text,
+                style = MaterialTheme.typography.labelSmall
             )
         },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

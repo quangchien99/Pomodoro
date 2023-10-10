@@ -1,5 +1,6 @@
 package chn.phm.pomodoro.domain.model
 
+import androidx.compose.ui.res.stringResource
 import chn.phm.pomodoro.R
 import chn.phm.pomodoro.utils.Const
 import kotlinx.serialization.Serializable

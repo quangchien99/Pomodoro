@@ -34,8 +34,8 @@ import chn.phm.pomodoro.domain.model.PomodoroState
 import chn.phm.pomodoro.domain.model.TimerType
 import chn.phm.pomodoro.ui.PomodoroViewModel
 import chn.phm.pomodoro.ui.dialog.SettingsDialog
-import chn.phm.pomodoro.ui.helper.UIHelper.createIconButton
-import chn.phm.pomodoro.ui.helper.UIHelper.createOutlinedButton
+import chn.phm.pomodoro.ui.helper.createIconButton
+import chn.phm.pomodoro.ui.helper.createOutlinedButton
 import chn.phm.pomodoro.ui.theme.PomodoroColor
 import chn.phm.pomodoro.ui.theme.Shapes
 import chn.phm.pomodoro.utils.PomodoroHelper.convertToMinuteFormat
