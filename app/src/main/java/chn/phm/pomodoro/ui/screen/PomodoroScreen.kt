@@ -1,12 +1,10 @@
 package chn.phm.pomodoro.ui.screen
 
 import android.content.Context
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,14 +34,15 @@ import chn.phm.pomodoro.domain.model.PomodoroState
 import chn.phm.pomodoro.domain.model.TimerType
 import chn.phm.pomodoro.ui.PomodoroViewModel
 import chn.phm.pomodoro.ui.dialog.SettingsDialog
+import chn.phm.pomodoro.ui.helper.UIHelper.createIconButton
+import chn.phm.pomodoro.ui.helper.UIHelper.createOutlinedButton
 import chn.phm.pomodoro.ui.theme.PomodoroColor
-import chn.phm.pomodoro.ui.theme.SelectedColor
 import chn.phm.pomodoro.ui.theme.Shapes
 import chn.phm.pomodoro.utils.PomodoroHelper.convertToMinuteFormat
 import coil.compose.rememberAsyncImagePainter
 import coil.imageLoader
 import coil.request.ImageRequest
-import java.util.Locale
+import java.util.*
 
 @Composable
 fun PomodoroScreen(
@@ -51,13 +50,18 @@ fun PomodoroScreen(
     pomodoroViewModel: PomodoroViewModel
 ) {
     val currentPomodoro by pomodoroViewModel.currentPomodoro
+    val currentPomodoroConfig by pomodoroViewModel.currentPomodoroConfig
     val isOpenSettingDialog = remember { mutableStateOf(false) }
 
     if (isOpenSettingDialog.value) {
-        SettingsDialog(onDismissRequest = {
+        SettingsDialog(
+            currentConfig = currentPomodoroConfig,
+            onDismissRequest = {
+                isOpenSettingDialog.value = false
+            }
+        ) {
             isOpenSettingDialog.value = false
-        }) {
-            isOpenSettingDialog.value = false
+            pomodoroViewModel.updateConfig(it)
         }
     }
 
@@ -65,7 +69,9 @@ fun PomodoroScreen(
         Image(
             painter = rememberAsyncImagePainter(
                 ImageRequest.Builder(LocalContext.current)
-                    .data(R.drawable.bg_galaxy)
+                    .data(
+                        currentPomodoroConfig.background.resId
+                    )
                     .build(),
                 imageLoader = LocalContext.current.imageLoader
             ),
@@ -232,46 +238,5 @@ private fun pomodoroActions(
                 iconResourceId = R.drawable.ic_next
             )
         }
-    }
-}
-
-
-@Composable
-private fun createIconButton(
-    onClick: () -> Unit,
-    iconResourceId: Int,
-    modifier: Modifier = Modifier
-) {
-    IconButton(
-        onClick = onClick,
-        modifier = modifier.padding(end = 16.dp, start = 16.dp)
-    ) {
-        Icon(
-            painter = painterResource(id = iconResourceId),
-            tint = Color.White,
-            contentDescription = "Icon",
-            modifier = Modifier.size(36.dp)
-        )
-    }
-}
-
-@Composable
-private fun createOutlinedButton(
-    isSelected: Boolean,
-    pomodoroViewModel: PomodoroViewModel,
-    timerType: TimerType,
-    content: @Composable () -> Unit
-) {
-    OutlinedButton(
-        onClick = { pomodoroViewModel.changeType(timerType) },
-        modifier = Modifier.padding(PaddingValues(start = 8.dp)),
-        colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = if (isSelected) SelectedColor else Color.Transparent,
-            contentColor = Color.White
-        ),
-        border = BorderStroke(0.dp, Color.Transparent),
-        contentPadding = PaddingValues(8.dp)
-    ) {
-        content()
     }
 }

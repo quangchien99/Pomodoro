@@ -46,13 +46,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import chn.phm.pomodoro.R
+import chn.phm.pomodoro.domain.model.PomodoroConfig
 import chn.phm.pomodoro.ui.theme.SelectedColor
 import chn.phm.pomodoro.ui.theme.Shapes
 
 @Composable
 fun SettingsDialog(
+    currentConfig: PomodoroConfig,
     onDismissRequest: () -> Unit,
-    onConfirmation: () -> Unit
+    onConfirmation: (PomodoroConfig) -> Unit
 ) {
     Dialog(
         onDismissRequest = { onDismissRequest() },
@@ -78,8 +80,8 @@ fun SettingsDialog(
                     onDismissRequest()
                 }
 
-                SettingContent() {
-                    onConfirmation()
+                SettingContent(currentConfig) { config ->
+                    onConfirmation(config)
                 }
             }
         }
@@ -105,7 +107,16 @@ private fun ColumnScope.Header(onDismissRequest: () -> Unit) {
 }
 
 @Composable
-private fun ColumnScope.SettingContent(onConfirmation: () -> Unit) {
+private fun ColumnScope.SettingContent(
+    currentConfig: PomodoroConfig,
+    onConfirmation: (PomodoroConfig) -> Unit
+) {
+    var newInterval by remember { mutableStateOf(currentConfig.longBreakInterval.toString()) }
+    var newPomodoroDuration by remember { mutableStateOf(currentConfig.pomodoroDuration.toString()) }
+    var newShortBreakDuration by remember { mutableStateOf(currentConfig.shortBreakDuration.toString()) }
+    var newLongBreakDuration by remember { mutableStateOf(currentConfig.longBreakDuration.toString()) }
+
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -145,9 +156,15 @@ private fun ColumnScope.SettingContent(onConfirmation: () -> Unit) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceAround
         ) {
-            durationTextField(25, "Pomodoro")
-            durationTextField(5, "Short Break")
-            durationTextField(15, "Long Break")
+            durationTextField(newPomodoroDuration, "Pomodoro") {
+                newPomodoroDuration = it
+            }
+            durationTextField(newShortBreakDuration, "Short Break") {
+                newShortBreakDuration = it
+            }
+            durationTextField(newLongBreakDuration, "Long Break") {
+                newLongBreakDuration = it
+            }
         }
 
         Row(
@@ -164,8 +181,6 @@ private fun ColumnScope.SettingContent(onConfirmation: () -> Unit) {
                 text = "Long Break Interval:",
                 style = MaterialTheme.typography.titleMedium
             )
-
-            var newInterval by remember { mutableStateOf("4") }
 
             TextField(
                 modifier = Modifier
@@ -278,7 +293,16 @@ private fun ColumnScope.SettingContent(onConfirmation: () -> Unit) {
             contentAlignment = Alignment.BottomEnd
         ) {
             OutlinedButton(
-                onClick = { onConfirmation() },
+                onClick = {
+                    onConfirmation(
+                        PomodoroConfig(
+                            pomodoroDuration = newPomodoroDuration.toInt(),
+                            shortBreakDuration = newShortBreakDuration.toInt(),
+                            longBreakDuration = newLongBreakDuration.toInt(),
+                            longBreakInterval = newInterval.toInt()
+                        )
+                    )
+                },
                 modifier = Modifier
                     .padding(PaddingValues(start = 8.dp))
                     .wrapContentHeight()
@@ -300,17 +324,19 @@ private fun ColumnScope.SettingContent(onConfirmation: () -> Unit) {
 }
 
 @Composable
-private fun RowScope.durationTextField(duration: Int, text: String) {
-    var newDuration by remember { mutableStateOf("$duration") }
-
+private fun RowScope.durationTextField(
+    duration: String,
+    text: String,
+    onValueChange: (String) -> Unit
+) {
     TextField(
         modifier = Modifier
             .width(100.dp)
             .height(48.dp)
             .align(Alignment.CenterVertically),
-        value = newDuration,
+        value = duration,
         textStyle = MaterialTheme.typography.titleSmall,
-        onValueChange = { newDuration = it },
+        onValueChange = { onValueChange(it) },
         label = {
             Text(
                 text, style = MaterialTheme.typography.labelSmall

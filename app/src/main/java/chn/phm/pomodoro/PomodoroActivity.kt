@@ -16,8 +16,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import chn.phm.pomodoro.ui.PomodoroViewModel
 import chn.phm.pomodoro.ui.screen.PomodoroScreen
 import chn.phm.pomodoro.ui.theme.PomodoroTheme
+import dagger.hilt.android.AndroidEntryPoint
 
 
+@AndroidEntryPoint
 class PomodoroActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

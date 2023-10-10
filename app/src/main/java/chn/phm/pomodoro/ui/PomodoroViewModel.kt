@@ -6,24 +6,49 @@ import android.os.CountDownTimer
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import chn.phm.pomodoro.R
+import chn.phm.pomodoro.data.datastore.PomodoroConfigCache
 import chn.phm.pomodoro.domain.model.Pomodoro
+import chn.phm.pomodoro.domain.model.PomodoroConfig
 import chn.phm.pomodoro.domain.model.PomodoroState
 import chn.phm.pomodoro.domain.model.TimerType
+import chn.phm.pomodoro.utils.Const.COUNTDOWN_INTERVAL
 import chn.phm.pomodoro.utils.Const.DEFAULT_POMODORO_INTERVAL
+import chn.phm.pomodoro.utils.Const.SECOND_TO_MINUTE_VALUE
+import chn.phm.pomodoro.utils.Const.ZERO_VALUE
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class PomodoroViewModel @Inject constructor() : ViewModel() {
+class PomodoroViewModel @Inject constructor(
+    private val pomodoroConfigCache: PomodoroConfigCache
+) : ViewModel() {
     private val _currentPomodoro = mutableStateOf(Pomodoro())
     val currentPomodoro: State<Pomodoro> = _currentPomodoro
+
+    private val _currentPomodoroConfig = mutableStateOf(PomodoroConfig())
+    val currentPomodoroConfig: State<PomodoroConfig> = _currentPomodoroConfig
 
     private var inProgressPomodoro: Pomodoro? = null
 
     private var countDownTimer: CountDownTimer? = null
 
-    private var pomodoroCount = 0
+    private var pomodoroCount = ZERO_VALUE
+
+    init {
+        viewModelScope.launch {
+            pomodoroConfigCache.cacheState.collect { pomodoroConfig ->
+                _currentPomodoroConfig.value = pomodoroConfig
+                _currentPomodoro.value.remainingTime = getCurrentDuration()
+            }
+        }
+
+        viewModelScope.launch {
+            pomodoroConfigCache.fetchConfig()
+        }
+    }
 
     fun changeType(timerType: TimerType) {
         if (_currentPomodoro.value.state != PomodoroState.READY) {
@@ -37,12 +62,12 @@ class PomodoroViewModel @Inject constructor() : ViewModel() {
         if (_currentPomodoro.value.timerType != timerType) {
             if (timerType != inProgressPomodoro?.timerType || inProgressPomodoro == null) {
                 _currentPomodoro.value.timerType = timerType
-                _currentPomodoro.value.remainingTime = timerType.duration * 60
+                updateCurrentDuration()
                 _currentPomodoro.value.state = PomodoroState.READY
             } else {
                 _currentPomodoro.value.timerType = inProgressPomodoro?.timerType ?: timerType
                 _currentPomodoro.value.remainingTime =
-                    inProgressPomodoro?.remainingTime ?: (timerType.duration * 60)
+                    inProgressPomodoro?.remainingTime ?: getCurrentDuration()
                 _currentPomodoro.value.state = inProgressPomodoro?.state ?: PomodoroState.READY
             }
         }
@@ -59,10 +84,14 @@ class PomodoroViewModel @Inject constructor() : ViewModel() {
 
         // Start a new countdown
         countDownTimer =
-            object : CountDownTimer(inProgressPomodoro!!.remainingTime.toLong() * 1000, 1000) {
+            object : CountDownTimer(
+                inProgressPomodoro!!.remainingTime.toLong() * COUNTDOWN_INTERVAL,
+                COUNTDOWN_INTERVAL
+            ) {
                 override fun onTick(millisUntilFinished: Long) {
                     if (_currentPomodoro.value.state == PomodoroState.COUNTING) {
-                        _currentPomodoro.value.remainingTime = (millisUntilFinished / 1000).toInt()
+                        _currentPomodoro.value.remainingTime =
+                            (millisUntilFinished / COUNTDOWN_INTERVAL).toInt()
                     }
                 }
 
@@ -76,7 +105,7 @@ class PomodoroViewModel @Inject constructor() : ViewModel() {
                                 changeType(TimerType.SHORT_BREAK)
                             } else {
                                 changeType(TimerType.LONG_BREAK)
-                                pomodoroCount = 0
+                                pomodoroCount = ZERO_VALUE
                             }
                         }
                         else -> {
@@ -103,7 +132,7 @@ class PomodoroViewModel @Inject constructor() : ViewModel() {
 
     fun restart() {
         _currentPomodoro.value.state = PomodoroState.READY
-        _currentPomodoro.value.remainingTime = currentPomodoro.value.timerType.duration * 60
+        updateCurrentDuration()
         if (inProgressPomodoro != null) {
             copyPomodoroValues(inProgressPomodoro!!, _currentPomodoro.value)
         } else {
@@ -113,7 +142,7 @@ class PomodoroViewModel @Inject constructor() : ViewModel() {
 
     fun next() {
         _currentPomodoro.value.state = PomodoroState.READY
-        when (currentPomodoro.value.timerType) {
+        when (_currentPomodoro.value.timerType) {
             TimerType.POMODORO -> {
                 _currentPomodoro.value.timerType = TimerType.SHORT_BREAK
             }
@@ -124,11 +153,46 @@ class PomodoroViewModel @Inject constructor() : ViewModel() {
                 _currentPomodoro.value.timerType = TimerType.POMODORO
             }
         }
-        _currentPomodoro.value.remainingTime = currentPomodoro.value.timerType.duration * 60
+        updateCurrentDuration()
         if (inProgressPomodoro != null) {
             copyPomodoroValues(inProgressPomodoro!!, _currentPomodoro.value)
         } else {
             inProgressPomodoro = createInProgressPomodoro()
+        }
+    }
+
+    private fun updateCurrentDuration() {
+        when (_currentPomodoro.value.timerType) {
+            TimerType.POMODORO -> {
+                _currentPomodoro.value.remainingTime =
+                    _currentPomodoroConfig.value.pomodoroDuration * SECOND_TO_MINUTE_VALUE
+            }
+            TimerType.SHORT_BREAK -> {
+                _currentPomodoro.value.remainingTime =
+                    _currentPomodoroConfig.value.shortBreakDuration * SECOND_TO_MINUTE_VALUE
+            }
+            TimerType.LONG_BREAK -> {
+                _currentPomodoro.value.remainingTime =
+                    _currentPomodoroConfig.value.longBreakDuration * SECOND_TO_MINUTE_VALUE
+            }
+        }
+    }
+
+    private fun getCurrentDuration() = when (_currentPomodoro.value.timerType) {
+        TimerType.POMODORO -> {
+            _currentPomodoroConfig.value.pomodoroDuration * SECOND_TO_MINUTE_VALUE
+        }
+        TimerType.SHORT_BREAK -> {
+            _currentPomodoroConfig.value.shortBreakDuration * SECOND_TO_MINUTE_VALUE
+        }
+        TimerType.LONG_BREAK -> {
+            _currentPomodoroConfig.value.longBreakDuration * SECOND_TO_MINUTE_VALUE
+        }
+    }
+
+    fun updateConfig(newConfig: PomodoroConfig) {
+        viewModelScope.launch {
+            pomodoroConfigCache.updateConfig(newConfig)
         }
     }
 
@@ -146,16 +210,12 @@ class PomodoroViewModel @Inject constructor() : ViewModel() {
 
     // Add a method to play the sound
     private fun playFinishSound(context: Context) {
-        val mediaPlayer = MediaPlayer.create(context, R.raw.digital)
+        val mediaPlayer = MediaPlayer.create(context, _currentPomodoroConfig.value.alarmSound.resId)
         mediaPlayer?.start()
 
         // Release the MediaPlayer when playback is completed
         mediaPlayer?.setOnCompletionListener {
             it.release()
         }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
     }
 }

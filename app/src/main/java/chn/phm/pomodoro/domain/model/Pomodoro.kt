@@ -10,13 +10,13 @@ import chn.phm.pomodoro.utils.Const
 class Pomodoro {
     var timerType by mutableStateOf(TimerType.POMODORO)
     var state by mutableStateOf(PomodoroState.READY)
-    var remainingTime by mutableStateOf(timerType.duration * Const.SECOND_TO_MINUTE_VALUE)
+    var remainingTime by mutableStateOf(Const.DEFAULT_POMODORO_DURATION)
 }
 
-enum class TimerType(val duration: Int) {
-    POMODORO(Const.DEFAULT_POMODORO_DURATION),
-    SHORT_BREAK(Const.DEFAULT_SHORT_BREAK_DURATION),
-    LONG_BREAK(Const.DEFAULT_LONG_BREAK_DURATION)
+enum class TimerType {
+    POMODORO,
+    SHORT_BREAK,
+    LONG_BREAK
 }
 
 enum class PomodoroState {
