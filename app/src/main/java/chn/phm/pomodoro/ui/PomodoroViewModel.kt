@@ -50,7 +50,7 @@ class PomodoroViewModel @Inject constructor(
     }
 
     fun changeType(timerType: TimerType) {
-        if (_currentPomodoro.value.state != PomodoroState.READY) {
+        if (_currentPomodoro.value.state != PomodoroState.READY && _currentPomodoro.value.state != PomodoroState.FINISHED) {
             if (inProgressPomodoro != null) {
                 copyPomodoroValues(inProgressPomodoro!!, _currentPomodoro.value)
             } else {
