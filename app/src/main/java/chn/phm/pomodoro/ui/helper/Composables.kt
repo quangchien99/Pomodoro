@@ -47,7 +47,7 @@ import chn.phm.pomodoro.ui.theme.SelectedColor
 
 
 @Composable
-fun createIconButton(
+fun PomodoroIconButton(
     onClick: () -> Unit,
     iconResourceId: Int,
     modifier: Modifier = Modifier
@@ -66,7 +66,7 @@ fun createIconButton(
 }
 
 @Composable
-fun createOutlinedButton(
+fun PomodoroOutlinedButton(
     isSelected: Boolean,
     pomodoroViewModel: PomodoroViewModel,
     timerType: TimerType,

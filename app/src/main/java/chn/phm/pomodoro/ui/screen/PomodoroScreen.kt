@@ -34,8 +34,8 @@ import chn.phm.pomodoro.domain.model.PomodoroState
 import chn.phm.pomodoro.domain.model.TimerType
 import chn.phm.pomodoro.ui.PomodoroViewModel
 import chn.phm.pomodoro.ui.dialog.SettingsDialog
-import chn.phm.pomodoro.ui.helper.createIconButton
-import chn.phm.pomodoro.ui.helper.createOutlinedButton
+import chn.phm.pomodoro.ui.helper.PomodoroIconButton
+import chn.phm.pomodoro.ui.helper.PomodoroOutlinedButton
 import chn.phm.pomodoro.ui.theme.PomodoroColor
 import chn.phm.pomodoro.ui.theme.Shapes
 import chn.phm.pomodoro.utils.PomodoroHelper.convertToMinuteFormat
@@ -104,7 +104,7 @@ fun PomodoroScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            pomodoroModes(pomodoroViewModel, currentPomodoro)
+            PomodoroModes(pomodoroViewModel, currentPomodoro)
 
             Text(
                 text = currentPomodoro.remainingTime.convertToMinuteFormat(),
@@ -113,13 +113,13 @@ fun PomodoroScreen(
                 modifier = Modifier.padding(bottom = 16.dp),
             )
 
-            pomodoroActions(context, pomodoroViewModel, currentPomodoro)
+            PomodoroActions(context, pomodoroViewModel, currentPomodoro)
         }
     }
 }
 
 @Composable
-private fun pomodoroModes(
+private fun PomodoroModes(
     pomodoroViewModel: PomodoroViewModel,
     currentPomodoro: Pomodoro
 ) {
@@ -127,7 +127,7 @@ private fun pomodoroModes(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center
     ) {
-        createOutlinedButton(
+        PomodoroOutlinedButton(
             currentPomodoro.timerType == TimerType.POMODORO,
             pomodoroViewModel,
             TimerType.POMODORO
@@ -142,7 +142,7 @@ private fun pomodoroModes(
             )
         }
 
-        createOutlinedButton(
+        PomodoroOutlinedButton(
             currentPomodoro.timerType == TimerType.SHORT_BREAK,
             pomodoroViewModel,
             TimerType.SHORT_BREAK
@@ -157,7 +157,7 @@ private fun pomodoroModes(
             )
         }
 
-        createOutlinedButton(
+        PomodoroOutlinedButton(
             currentPomodoro.timerType == TimerType.LONG_BREAK,
             pomodoroViewModel,
             TimerType.LONG_BREAK
@@ -175,7 +175,7 @@ private fun pomodoroModes(
 }
 
 @Composable
-private fun pomodoroActions(
+private fun PomodoroActions(
     context: Context,
     pomodoroViewModel: PomodoroViewModel,
     currentPomodoro: Pomodoro
@@ -187,7 +187,7 @@ private fun pomodoroActions(
 
     ) {
         if (currentPomodoro.state == PomodoroState.PAUSED) {
-            createIconButton(
+            PomodoroIconButton(
                 onClick = { pomodoroViewModel.restart() },
                 iconResourceId = R.drawable.ic_restart
             )
@@ -236,7 +236,7 @@ private fun pomodoroActions(
             )
         }
         if (currentPomodoro.state == PomodoroState.PAUSED) {
-            createIconButton(
+            PomodoroIconButton(
                 onClick = { pomodoroViewModel.next() },
                 iconResourceId = R.drawable.ic_next
             )
