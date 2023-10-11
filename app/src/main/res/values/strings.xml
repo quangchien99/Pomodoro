@@ -15,8 +15,17 @@
     <string name="content_timer_long_break">15:00</string>
 
     <string name="background_galaxy_name">Galaxy</string>
+    <string name="background_love_night_name">Love Night</string>
     <string name="background_night_name">Night</string>
     <string name="background_rainy_name">Rainy</string>
+    <string name="background_window_name">Window</string>
 
+    <string name="alarm_sound_beep_name">Beep</string>
+    <string name="alarm_sound_church_name">Church</string>
     <string name="alarm_sound_digital_name">Digital</string>
+    <string name="alarm_sound_electronic_name">Electronic</string>
+    <string name="alarm_sound_marimba_name">Marimba</string>
+    <string name="alarm_sound_old_mechanic_name">Old Mechanic</string>
+    <string name="alarm_sound_ringtone_name">Ringtone</string>
+    <string name="alarm_sound_simple_name">Simple</string>
 </resources>

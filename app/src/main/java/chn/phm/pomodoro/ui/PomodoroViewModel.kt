@@ -44,7 +44,9 @@ class PomodoroViewModel @Inject constructor(
         viewModelScope.launch {
             pomodoroConfigCache.cacheState.collect { pomodoroConfig ->
                 _currentPomodoroConfig.value = pomodoroConfig
-                _currentPomodoro.value.remainingTime = getCurrentDuration()
+                if (_currentPomodoro.value.state != PomodoroState.PAUSED) {
+                    _currentPomodoro.value.remainingTime = getCurrentDuration()
+                }
             }
         }
 

@@ -246,7 +246,14 @@ private fun ColumnScope.SettingContent(
                 .wrapContentHeight()
                 .padding(start = 20.dp, end = 20.dp, bottom = 16.dp),
             items = listOf(
-                R.string.alarm_sound_digital_name
+                R.string.alarm_sound_digital_name,
+                R.string.alarm_sound_church_name,
+                R.string.alarm_sound_digital_name,
+                R.string.alarm_sound_electronic_name,
+                R.string.alarm_sound_marimba_name,
+                R.string.alarm_sound_old_mechanic_name,
+                R.string.alarm_sound_ringtone_name,
+                R.string.alarm_sound_simple_name,
             ).map { resourceId ->
                 stringResource(id = resourceId)
             },
@@ -287,8 +294,10 @@ private fun ColumnScope.SettingContent(
                 .padding(start = 20.dp, end = 20.dp, bottom = 16.dp),
             items = listOf(
                 R.string.background_galaxy_name,
+                R.string.background_love_night_name,
                 R.string.background_night_name,
-                R.string.background_rainy_name
+                R.string.background_rainy_name,
+                R.string.background_window_name
             ).map { resourceId ->
                 stringResource(id = resourceId)
             },
