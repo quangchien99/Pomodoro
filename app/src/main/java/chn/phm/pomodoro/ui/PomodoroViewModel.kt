@@ -3,10 +3,14 @@ package chn.phm.pomodoro.ui
 import android.content.Context
 import android.media.MediaPlayer
 import android.os.CountDownTimer
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import chn.phm.pomodoro.PomodoroLifecycleObserver
 import chn.phm.pomodoro.data.datastore.PomodoroConfigCache
 import chn.phm.pomodoro.domain.model.Pomodoro
 import chn.phm.pomodoro.domain.model.PomodoroConfig
@@ -215,5 +219,9 @@ class PomodoroViewModel @Inject constructor(
         mediaPlayer?.setOnCompletionListener {
             it.release()
         }
+    }
+
+    private fun isAppForeGround(): Boolean {
+        return PomodoroLifecycleObserver.isAppForeground
     }
 }
