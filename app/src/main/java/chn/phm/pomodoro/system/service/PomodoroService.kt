@@ -2,6 +2,7 @@ package chn.phm.pomodoro.system.service
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -10,6 +11,7 @@ import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import chn.phm.pomodoro.PomodoroActivity
 import chn.phm.pomodoro.R
 import chn.phm.pomodoro.ui.PomodoroAction
 import chn.phm.pomodoro.utils.PomodoroHelper.convertToMinuteFormat
@@ -36,7 +38,7 @@ class PomodoroService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        remainingTime = intent?.getIntExtra("remainingTime", 0) ?: 0
+        remainingTime = intent?.getIntExtra("remaining_time", 0) ?: 0
         soundId = intent?.getIntExtra("sound_id", -1) ?: -1
         return START_STICKY
     }
@@ -54,9 +56,16 @@ class PomodoroService : Service() {
             createNotificationChannel(notificationManager)
         }
 
+        val intent = Intent(this, PomodoroActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
+
         currentNotification = NotificationCompat.Builder(this, "TimeCounterChannel")
             .setContentTitle("Time Counting")
             .setSmallIcon(R.drawable.ic_pomodoro)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
 
 
         startForeground(1, currentNotification.build())

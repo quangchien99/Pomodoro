@@ -48,7 +48,7 @@ import chn.phm.pomodoro.utils.PomodoroHelper.convertToMinuteFormat
 import coil.compose.rememberAsyncImagePainter
 import coil.imageLoader
 import coil.request.ImageRequest
-import java.util.Locale
+import java.util.*
 
 @Composable
 fun PomodoroScreen(
@@ -258,7 +258,7 @@ private fun ObservePomodoroActions(viewModel: PomodoroViewModel) {
     val context = LocalContext.current
 
     actionEvent.getContentIfNotHandled()?.let { action ->
-        Log.e("Pomodoro","Event= $action")
+        Log.d("Pomodoro", "Event= $action")
         when (action) {
             is PomodoroAction.PlaySound -> {
                 val mediaPlayer = MediaPlayer.create(context, action.soundId)
@@ -267,7 +267,7 @@ private fun ObservePomodoroActions(viewModel: PomodoroViewModel) {
             }
             is PomodoroAction.StartCountingService -> {
                 val startIntent = Intent(context, PomodoroService::class.java).apply {
-                    putExtra("remainingTime", action.countingTime)
+                    putExtra("remaining_time", action.countingTime)
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     context.startForegroundService(startIntent)
