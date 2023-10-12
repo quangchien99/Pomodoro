@@ -1,9 +1,9 @@
 package chn.phm.pomodoro.system.service
 
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.media.MediaPlayer
 import android.os.Binder
@@ -12,6 +12,7 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import chn.phm.pomodoro.R
 import chn.phm.pomodoro.ui.PomodoroAction
+import chn.phm.pomodoro.utils.PomodoroHelper.convertToMinuteFormat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -25,7 +26,12 @@ class PomodoroService : Service() {
     private var soundId: Int = -1
     private val serviceScope = CoroutineScope(Dispatchers.IO)
 
-    override fun onBind(p0: Intent?): IBinder? {
+    /**
+     * Builder of the current notification
+     */
+    private lateinit var currentNotification: NotificationCompat.Builder
+
+    override fun onBind(intent: Intent?): IBinder {
         return binder
     }
 
@@ -41,17 +47,25 @@ class PomodoroService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createNotificationChannel()
+            createNotificationChannel(notificationManager)
         }
-        val notification = buildNotification()
-        startForeground(1, notification)
+
+        currentNotification = NotificationCompat.Builder(this, "TimeCounterChannel")
+            .setContentTitle("Time Counting")
+            .setSmallIcon(R.drawable.ic_pomodoro)
+
+
+        startForeground(1, currentNotification.build())
 
         serviceScope.launch {
             while (remainingTime >= 0) {
                 delay(1000)
                 remainingTime--
-                updateNotification()
+                updateNotification(notificationManager)
                 if (remainingTime < 0) {
                     stopSelf()
                     playSound()
@@ -60,33 +74,20 @@ class PomodoroService : Service() {
         }
     }
 
-    private fun buildNotification(): Notification {
-        return NotificationCompat.Builder(this, "TimeCounterChannel")
-            .setContentTitle("Time Counting")
-            .setContentText("Counter: $remainingTime")
-            .setSmallIcon(R.drawable.ic_timer)
-            .build()
+    private fun updateNotification(notificationManager: NotificationManager) {
+        val notification = currentNotification
+            .setContentText("Counter: ${remainingTime.convertToMinuteFormat()}")
+        notificationManager.notify(1, notification.build())
     }
 
-    private fun updateNotification() {
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        val notification = NotificationCompat.Builder(this, "TimeCounterChannel")
-            .setContentTitle("Time Counting")
-            .setContentText("Counter: $remainingTime")
-            .setSmallIcon(R.drawable.ic_timer)
-            .build()
-        notificationManager.notify(1, notification)
-    }
-
-    private fun createNotificationChannel() {
+    private fun createNotificationChannel(notificationManager: NotificationManager) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val serviceChannel = NotificationChannel(
                 "TimeCounterChannel",
                 "Time Counting Service Channel",
-                NotificationManager.IMPORTANCE_DEFAULT
+                NotificationManager.IMPORTANCE_LOW
             )
-            val manager = getSystemService(NotificationManager::class.java)
-            manager.createNotificationChannel(serviceChannel)
+            notificationManager.createNotificationChannel(serviceChannel)
         }
     }
 
