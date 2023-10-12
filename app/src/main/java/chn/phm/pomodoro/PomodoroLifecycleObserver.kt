@@ -3,17 +3,18 @@ package chn.phm.pomodoro
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.MutableLiveData
 
 object PomodoroLifecycleObserver : LifecycleObserver {
-    var isAppForeground = false
+    val isAppForeground = MutableLiveData<Boolean>(true)
 
     private val lifecycleEventObserver = LifecycleEventObserver { _, event ->
         when (event) {
             Lifecycle.Event.ON_STOP -> {
-                isAppForeground = false
+                isAppForeground.value = false
             }
             Lifecycle.Event.ON_START -> {
-                isAppForeground = true
+                isAppForeground.value = true
             }
             else -> {}
         }

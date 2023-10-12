@@ -1,13 +1,9 @@
 package chn.phm.pomodoro.ui
 
-import android.content.Context
-import android.media.MediaPlayer
 import android.os.CountDownTimer
-import android.util.Log
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import chn.phm.pomodoro.PomodoroLifecycleObserver
@@ -22,6 +18,9 @@ import chn.phm.pomodoro.utils.Const.SECOND_TO_MINUTE_VALUE
 import chn.phm.pomodoro.utils.Const.ZERO_VALUE
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import javax.inject.Inject
 
 @HiltViewModel
@@ -34,6 +33,10 @@ class PomodoroViewModel @Inject constructor(
     private val _currentPomodoroConfig = mutableStateOf(PomodoroConfig())
     val currentPomodoroConfig: State<PomodoroConfig> = _currentPomodoroConfig
 
+    private val _pomodoroActionEvent: MutableState<Event<PomodoroAction>> =
+        mutableStateOf(Event(PomodoroAction.NONE))
+    val pomodoroActionEvent: State<Event<PomodoroAction>> = _pomodoroActionEvent
+
     private var inProgressPomodoro: Pomodoro? = null
 
     private var countDownTimer: CountDownTimer? = null
@@ -41,6 +44,9 @@ class PomodoroViewModel @Inject constructor(
     private var pomodoroCount = ZERO_VALUE
 
     init {
+
+        EventBus.getDefault().register(this)
+
         viewModelScope.launch {
             pomodoroConfigCache.cacheState.collect { pomodoroConfig ->
                 _currentPomodoroConfig.value = pomodoroConfig
@@ -53,6 +59,27 @@ class PomodoroViewModel @Inject constructor(
         viewModelScope.launch {
             pomodoroConfigCache.fetchConfig()
         }
+
+        PomodoroLifecycleObserver.isAppForeground.observeForever { isForeground ->
+            if (isForeground) {
+                if (_currentPomodoro.value.state == PomodoroState.PAUSED) {
+                    _pomodoroActionEvent.value = Event(PomodoroAction.StopCountingService)
+                }
+            } else {
+                if (_currentPomodoro.value.state == PomodoroState.COUNTING) {
+                    pause()
+                    _pomodoroActionEvent.value = Event(
+                        PomodoroAction.StartCountingService(_currentPomodoro.value.remainingTime)
+                    )
+                }
+            }
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onCountingServiceDestroyedEvent(event: PomodoroAction.CountingServiceDestroyed) {
+        _currentPomodoro.value.remainingTime = event.remainingTime
+        resume()
     }
 
     fun changeType(timerType: TimerType) {
@@ -78,7 +105,7 @@ class PomodoroViewModel @Inject constructor(
         }
     }
 
-    fun start(context: Context) {
+    fun start() {
         countDownTimer?.cancel()
         _currentPomodoro.value.state = PomodoroState.COUNTING
         if (inProgressPomodoro != null) {
@@ -102,7 +129,9 @@ class PomodoroViewModel @Inject constructor(
 
                 override fun onFinish() {
                     _currentPomodoro.value.state = PomodoroState.FINISHED
-                    playAlarmSound(context, _currentPomodoroConfig.value.alarmSound.resId)
+                    _pomodoroActionEvent.value = Event(
+                        PomodoroAction.PlaySound(_currentPomodoroConfig.value.alarmSound.resId)
+                    )
                     when (_currentPomodoro.value.timerType) {
                         TimerType.POMODORO -> {
                             pomodoroCount++
@@ -131,8 +160,8 @@ class PomodoroViewModel @Inject constructor(
         _currentPomodoro.value.state = PomodoroState.PAUSED
     }
 
-    fun resume(context: Context) {
-        start(context = context)
+    fun resume() {
+        start()
     }
 
     fun restart() {
@@ -213,17 +242,14 @@ class PomodoroViewModel @Inject constructor(
         }
     }
 
-    fun playAlarmSound(context: Context, soundId: Int) {
-        val mediaPlayer = MediaPlayer.create(context, soundId)
-        mediaPlayer?.start()
-
-        // Release the MediaPlayer when playback is completed
-        mediaPlayer?.setOnCompletionListener {
-            it.release()
-        }
+    fun selectedSound(soundId: Int) {
+        _pomodoroActionEvent.value = Event(
+            PomodoroAction.PlaySound(soundId)
+        )
     }
 
-    private fun isAppForeGround(): Boolean {
-        return PomodoroLifecycleObserver.isAppForeground
+    override fun onCleared() {
+        EventBus.getDefault().unregister(this)
+        super.onCleared()
     }
 }

@@ -1,6 +1,10 @@
 package chn.phm.pomodoro.ui.screen
 
 import android.content.Context
+import android.content.Intent
+import android.media.MediaPlayer
+import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,6 +36,8 @@ import chn.phm.pomodoro.R
 import chn.phm.pomodoro.domain.model.Pomodoro
 import chn.phm.pomodoro.domain.model.PomodoroState
 import chn.phm.pomodoro.domain.model.TimerType
+import chn.phm.pomodoro.system.service.PomodoroService
+import chn.phm.pomodoro.ui.PomodoroAction
 import chn.phm.pomodoro.ui.PomodoroViewModel
 import chn.phm.pomodoro.ui.dialog.SettingsDialog
 import chn.phm.pomodoro.ui.helper.PomodoroIconButton
@@ -42,7 +48,7 @@ import chn.phm.pomodoro.utils.PomodoroHelper.convertToMinuteFormat
 import coil.compose.rememberAsyncImagePainter
 import coil.imageLoader
 import coil.request.ImageRequest
-import java.util.*
+import java.util.Locale
 
 @Composable
 fun PomodoroScreen(
@@ -53,11 +59,13 @@ fun PomodoroScreen(
     val currentPomodoroConfig by pomodoroViewModel.currentPomodoroConfig
     val isOpenSettingDialog = remember { mutableStateOf(false) }
 
+    ObservePomodoroActions(pomodoroViewModel)
+
     if (isOpenSettingDialog.value) {
         SettingsDialog(
             currentConfig = currentPomodoroConfig,
             onAlarmSoundSelected = { selectedAlarmSound ->
-                pomodoroViewModel.playAlarmSound(context, selectedAlarmSound.resId)
+                pomodoroViewModel.selectedSound(selectedAlarmSound.resId)
             },
             onDismissRequest = {
                 isOpenSettingDialog.value = false
@@ -198,13 +206,13 @@ private fun PomodoroActions(
             onClick = {
                 when (currentPomodoro.state) {
                     PomodoroState.READY -> {
-                        pomodoroViewModel.start(context = context)
+                        pomodoroViewModel.start()
                     }
                     PomodoroState.COUNTING -> {
                         pomodoroViewModel.pause()
                     }
                     PomodoroState.PAUSED -> {
-                        pomodoroViewModel.resume(context = context)
+                        pomodoroViewModel.resume()
                     }
                     PomodoroState.FINISHED -> {
                         //do nothing
@@ -240,6 +248,40 @@ private fun PomodoroActions(
                 onClick = { pomodoroViewModel.next() },
                 iconResourceId = R.drawable.ic_next
             )
+        }
+    }
+}
+
+@Composable
+private fun ObservePomodoroActions(viewModel: PomodoroViewModel) {
+    val actionEvent by viewModel.pomodoroActionEvent
+    val context = LocalContext.current
+
+    actionEvent.getContentIfNotHandled()?.let { action ->
+        Log.e("Pomodoro","Event= $action")
+        when (action) {
+            is PomodoroAction.PlaySound -> {
+                val mediaPlayer = MediaPlayer.create(context, action.soundId)
+                mediaPlayer?.start()
+                mediaPlayer?.setOnCompletionListener { it.release() }
+            }
+            is PomodoroAction.StartCountingService -> {
+                val startIntent = Intent(context, PomodoroService::class.java).apply {
+                    putExtra("remainingTime", action.countingTime)
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    context.startForegroundService(startIntent)
+                } else {
+                    context.startService(startIntent)
+                }
+            }
+            PomodoroAction.StopCountingService -> {
+                val stopIntent = Intent(context, PomodoroService::class.java)
+                context.stopService(stopIntent)
+            }
+            else -> {
+                //do nothing
+            }
         }
     }
 }
