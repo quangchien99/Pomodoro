@@ -268,6 +268,8 @@ private fun ObservePomodoroActions(viewModel: PomodoroViewModel) {
             is PomodoroAction.StartCountingService -> {
                 val startIntent = Intent(context, PomodoroService::class.java).apply {
                     putExtra("remaining_time", action.countingTime)
+                    putExtra("sound_id", action.soundId)
+                    putExtra("background_id", action.backgroundId)
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     context.startForegroundService(startIntent)

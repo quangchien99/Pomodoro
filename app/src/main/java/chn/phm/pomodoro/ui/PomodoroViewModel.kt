@@ -69,7 +69,11 @@ class PomodoroViewModel @Inject constructor(
                 if (_currentPomodoro.value.state == PomodoroState.COUNTING) {
                     pause()
                     _pomodoroActionEvent.value = Event(
-                        PomodoroAction.StartCountingService(_currentPomodoro.value.remainingTime)
+                        PomodoroAction.StartCountingService(
+                            _currentPomodoro.value.remainingTime,
+                            _currentPomodoroConfig.value.alarmSound.resId,
+                            _currentPomodoroConfig.value.background.resId
+                        )
                     )
                 }
             }

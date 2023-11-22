@@ -28,4 +28,8 @@
     <string name="alarm_sound_old_mechanic_name">Old Mechanic</string>
     <string name="alarm_sound_ringtone_name">Ringtone</string>
     <string name="alarm_sound_simple_name">Simple</string>
+
+
+    <string name="updating">updating</string>
+    <string name="background">background</string>
 </resources>
