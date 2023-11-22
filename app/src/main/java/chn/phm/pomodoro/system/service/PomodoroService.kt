@@ -90,7 +90,6 @@ class PomodoroService : Service() {
             )
             .setAutoCancel(true)
 
-
         startForeground(1, currentNotification.build())
 
         serviceScope.launch {

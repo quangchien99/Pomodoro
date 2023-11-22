@@ -45,7 +45,6 @@ import chn.phm.pomodoro.ui.PomodoroViewModel
 import chn.phm.pomodoro.ui.theme.PomodoroTheme
 import chn.phm.pomodoro.ui.theme.SelectedColor
 
-
 @Composable
 fun PomodoroIconButton(
     onClick: () -> Unit,
@@ -94,7 +93,6 @@ fun CustomDivider() {
         modifier = Modifier.padding(start = 8.dp, end = 8.dp)
     )
 }
-
 
 @Composable
 fun <T> LargeDropdownMenu(
@@ -206,10 +204,12 @@ private fun LargeDropdownMenuItem(
     }
 
     CompositionLocalProvider(LocalContentColor provides contentColor) {
-        Box(modifier = Modifier
-            .clickable(isEnabled) { onClick() }
-            .fillMaxWidth()
-            .padding(16.dp)) {
+        Box(
+            modifier = Modifier
+                .clickable(isEnabled) { onClick() }
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
             Text(
                 text = text,
                 style = MaterialTheme.typography.titleSmall,

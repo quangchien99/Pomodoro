@@ -48,7 +48,7 @@ import chn.phm.pomodoro.utils.PomodoroHelper.convertToMinuteFormat
 import coil.compose.rememberAsyncImagePainter
 import coil.imageLoader
 import coil.request.ImageRequest
-import java.util.*
+import java.util.Locale
 
 @Composable
 fun PomodoroScreen(
@@ -215,7 +215,7 @@ private fun PomodoroActions(
                         pomodoroViewModel.resume()
                     }
                     PomodoroState.FINISHED -> {
-                        //do nothing
+                        // do nothing
                     }
                 }
             },
@@ -282,7 +282,7 @@ private fun ObservePomodoroActions(viewModel: PomodoroViewModel) {
                 context.stopService(stopIntent)
             }
             else -> {
-                //do nothing
+                // do nothing
             }
         }
     }

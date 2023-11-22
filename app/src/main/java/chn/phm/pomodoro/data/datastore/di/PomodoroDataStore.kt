@@ -19,5 +19,4 @@ object PomodoroDataStore {
     @Singleton
     fun provideAppConfigDataStore(@ApplicationContext context: Context): DataStore<PomodoroConfig> =
         context.pomodoroConfigDataStore
-
 }

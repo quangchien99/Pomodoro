@@ -132,7 +132,6 @@ private fun ColumnScope.SettingContent(
         )
     }
 
-
     Column(
         modifier = Modifier
             .fillMaxSize()

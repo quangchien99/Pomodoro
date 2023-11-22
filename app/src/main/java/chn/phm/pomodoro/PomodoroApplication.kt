@@ -34,5 +34,4 @@ class PomodoroApplication : Application(), ImageLoaderFactory, LifecycleObserver
             .allowHardware(false)
             .build()
     }
-
 }

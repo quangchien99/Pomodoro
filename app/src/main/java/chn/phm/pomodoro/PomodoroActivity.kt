@@ -18,7 +18,6 @@ import chn.phm.pomodoro.ui.screen.PomodoroScreen
 import chn.phm.pomodoro.ui.theme.PomodoroTheme
 import dagger.hilt.android.AndroidEntryPoint
 
-
 @AndroidEntryPoint
 class PomodoroActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,10 +43,10 @@ class PomodoroActivity : ComponentActivity() {
 
     private fun hideSystemUI() {
 
-        //Hides the ugly action bar at the top
+        // Hides the ugly action bar at the top
         actionBar?.hide()
 
-        //Hide the status bars
+        // Hide the status bars
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
