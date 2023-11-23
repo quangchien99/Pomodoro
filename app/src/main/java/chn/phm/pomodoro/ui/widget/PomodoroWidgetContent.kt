@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.Button
+import androidx.glance.ButtonDefaults
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
@@ -38,6 +39,9 @@ import chn.phm.pomodoro.domain.model.Pomodoro
 import chn.phm.pomodoro.domain.model.PomodoroConfig
 import chn.phm.pomodoro.domain.model.PomodoroState
 import chn.phm.pomodoro.domain.model.TimerType
+import chn.phm.pomodoro.utils.Const.SECOND_TO_MINUTE_VALUE
+import chn.phm.pomodoro.utils.PomodoroHelper.convertToMinuteFormat
+import java.util.Locale
 
 @Composable
 fun PomodoroWidgetContent() {
@@ -71,8 +75,9 @@ fun PomodoroContent(context: Context, config: PomodoroConfig) {
 
     val currentPomodoro = mutableStateOf(Pomodoro())
     currentPomodoro.value.timerType = TimerType.POMODORO
-    currentPomodoro.value.remainingTime = config.pomodoroDuration
+    currentPomodoro.value.remainingTime = config.pomodoroDuration * SECOND_TO_MINUTE_VALUE
     currentPomodoro.value.state = PomodoroState.READY
+
     Box(
         modifier = GlanceModifier
             .fillMaxSize(),
@@ -93,27 +98,71 @@ fun PomodoroContent(context: Context, config: PomodoroConfig) {
                 modifier = GlanceModifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Spacer(modifier = GlanceModifier.size(8.dp))
                 Button(
                     text = "Pomodoro",
-                    onClick = { /*TODO*/ },
-                    modifier = GlanceModifier.defaultWeight()
+                    onClick = {
+                        if (currentPomodoro.value.timerType != TimerType.POMODORO) {
+                            currentPomodoro.value.timerType = TimerType.POMODORO
+                            currentPomodoro.value.remainingTime =
+                                config.pomodoroDuration * SECOND_TO_MINUTE_VALUE
+                        }
+                    },
+                    modifier = GlanceModifier.defaultWeight(),
+                    colors = ButtonDefaults.buttonColors(
+                        if (currentPomodoro.value.timerType == TimerType.POMODORO) {
+                            ColorProvider(R.color.selected_btn)
+                        } else {
+                            ColorProvider(R.color.transparent)
+                        },
+                        ColorProvider(R.color.white)
+                    )
                 )
                 Spacer(modifier = GlanceModifier.size(8.dp))
                 Button(
                     text = "Short Break",
-                    onClick = { /*TODO*/ },
-                    modifier = GlanceModifier.defaultWeight()
+                    onClick = {
+                        if (currentPomodoro.value.timerType != TimerType.SHORT_BREAK) {
+                            currentPomodoro.value.timerType = TimerType.SHORT_BREAK
+                            currentPomodoro.value.remainingTime =
+                                config.shortBreakDuration * SECOND_TO_MINUTE_VALUE
+                        }
+                    },
+                    modifier = GlanceModifier.defaultWeight(),
+                    colors = ButtonDefaults.buttonColors(
+                        if (currentPomodoro.value.timerType == TimerType.SHORT_BREAK) {
+                            ColorProvider(R.color.selected_btn)
+                        } else {
+                            ColorProvider(R.color.transparent)
+                        },
+                        ColorProvider(R.color.white)
+                    )
                 )
                 Spacer(modifier = GlanceModifier.size(8.dp))
                 Button(
                     text = "Long Break",
-                    onClick = { /*TODO*/ },
-                    modifier = GlanceModifier.defaultWeight()
-
+                    onClick = {
+                        if (currentPomodoro.value.timerType != TimerType.LONG_BREAK) {
+                            currentPomodoro.value.timerType = TimerType.LONG_BREAK
+                            currentPomodoro.value.remainingTime =
+                                config.longBreakDuration * SECOND_TO_MINUTE_VALUE
+                        }
+                    },
+                    modifier = GlanceModifier.defaultWeight(),
+                    colors = ButtonDefaults.buttonColors(
+                        if (currentPomodoro.value.timerType == TimerType.LONG_BREAK) {
+                            ColorProvider(R.color.selected_btn)
+                        } else {
+                            ColorProvider(R.color.transparent)
+                        },
+                        ColorProvider(R.color.white)
+                    )
                 )
+                Spacer(modifier = GlanceModifier.size(8.dp))
             }
+
             Text(
-                text = "25:00",
+                text = currentPomodoro.value.remainingTime.convertToMinuteFormat(),
                 maxLines = 1,
                 style = TextStyle(
                     color = ColorProvider(R.color.white),
@@ -128,28 +177,60 @@ fun PomodoroContent(context: Context, config: PomodoroConfig) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Image(
-                    provider = ImageProvider(resId = R.drawable.ic_restart),
-                    contentDescription = "",
-                    modifier = GlanceModifier.size(32.dp)
-                        .clickable(onClick = openAppIntent),
-                    contentScale = ContentScale.Fit
-                )
-                Spacer(modifier = GlanceModifier.size(8.dp))
+                if (currentPomodoro.value.state == PomodoroState.PAUSED) {
+                    Image(
+                        provider = ImageProvider(resId = R.drawable.ic_restart),
+                        contentDescription = "",
+                        modifier = GlanceModifier.size(32.dp)
+                            .clickable(onClick = openAppIntent),
+                        contentScale = ContentScale.Fit
+                    )
+                    Spacer(modifier = GlanceModifier.size(8.dp))
+                }
                 Button(
-                    text = "Start",
-                    onClick = { /*TODO*/ },
+                    text = when (currentPomodoro.value.state) {
+                        PomodoroState.READY -> {
+                            "Start".uppercase(Locale.ROOT)
+                        }
+                        PomodoroState.COUNTING -> {
+                            "Pause".uppercase(Locale.ROOT)
+                        }
+                        PomodoroState.PAUSED -> {
+                            "Resume".uppercase(Locale.ROOT)
+                        }
+                        PomodoroState.FINISHED -> {
+                            "Start".uppercase(Locale.ROOT)
+                        }
+                    },
+                    onClick = {
+                        when (currentPomodoro.value.state) {
+                            PomodoroState.READY -> {
+                                currentPomodoro.value.state = PomodoroState.COUNTING
+                            }
+                            PomodoroState.COUNTING -> {
+                                currentPomodoro.value.state = PomodoroState.PAUSED
+                            }
+                            PomodoroState.PAUSED -> {
+                                currentPomodoro.value.state = PomodoroState.COUNTING
+                            }
+                            else -> {
+                                // do nothing
+                            }
+                        }
+                    },
                     modifier = GlanceModifier.wrapContentHeight()
                         .width(160.dp)
                 )
-                Spacer(modifier = GlanceModifier.size(8.dp))
-                Image(
-                    provider = ImageProvider(resId = R.drawable.ic_next),
-                    contentDescription = "",
-                    modifier = GlanceModifier.size(32.dp)
-                        .clickable(onClick = openAppIntent),
-                    contentScale = ContentScale.Fit
-                )
+                if (currentPomodoro.value.state == PomodoroState.PAUSED) {
+                    Spacer(modifier = GlanceModifier.size(8.dp))
+                    Image(
+                        provider = ImageProvider(resId = R.drawable.ic_next),
+                        contentDescription = "",
+                        modifier = GlanceModifier.size(32.dp)
+                            .clickable(onClick = openAppIntent),
+                        contentScale = ContentScale.Fit
+                    )
+                }
             }
         }
     }
