@@ -87,4 +87,10 @@ dependencies {
 
     //Event bus
     implementation 'org.greenrobot:eventbus:3.3.1'
+
+    // For AppWidgets support
+    implementation "androidx.glance:glance-appwidget:1.0.0"
+
+    // For interop APIs with Material 3
+    implementation "androidx.glance:glance-material3:1.0.0"
 }
